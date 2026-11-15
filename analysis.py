@@ -113,3 +113,49 @@ for jj in range(2):
         fig2.savefig(f"anneal_values_{jj+1}_{ii+1}.png")
 
     plt.show()
+
+# Shallow well 
+shallowStarts = [(1.0, 0.5), (1.95, 1.45)]
+
+for jjj in range(2):
+    f = functions[jjj]
+    b = bounds[jjj]
+    x, y = np.meshgrid(np.linspace(b[0], b[1], 300), np.linspace(b[2], b[3], 300))
+    for k in range(3):
+        fig1, ax1 = plt.subplots()
+        fig2, ax2 = plt.subplots()
+        ax1.contour(x, y, f(x, y), levels=20)
+
+
+        for i in range(6):
+            path, values, n, reason, bestPoint, bestF, finalT = simAnnealing(
+                functions[jjj], *shallowStarts[jjj], s, bounds[jjj],
+                T0=T0s[jjj][k], alpha=alpha[k]
+            )
+            ax1.plot(path[:, 0], path[:, 1], label=f"Run {i+1}")
+            ax1.scatter(*bestPoint, marker="x")
+
+            ax2.plot(values, label=f"Run {i+1}")
+
+            print(f"Function {jjj+1}, Schedule {k+1}, Run {i+1}")
+            print(f"Run {i+1}: Best = {bestF}, Position = {bestPoint}, Steps = {n}")
+
+        ax1.scatter(*shallowStarts[jjj], color="black",
+                    marker="*", s=120, label="Start")
+
+        ax1.set_title(f"Function {jjj+1}: Shallow Well, Schedule {k+1}")
+        ax1.set_xlabel("x")
+        ax1.set_ylabel("y")
+        ax1.set_aspect("equal")
+        ax1.legend()
+
+        ax2.set_title(f"Function {jjj+1}: Shallow Well, Schedule {k+1}")
+        ax2.set_xlabel("Attempted Step")
+        ax2.set_ylabel("Current Objective Value")
+        ax2.legend()
+
+        fig1.savefig(f"shallow_paths_{jjj+1}_{k+1}.png")
+        fig2.savefig(f"shallow_values_{jjj+1}_{k+1}.png")
+
+plt.show()
+           

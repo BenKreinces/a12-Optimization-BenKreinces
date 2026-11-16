@@ -5,6 +5,8 @@ import landscapes
 from optimization import hillClimb, simAnnealing, randomSampling
 
 
+rng = np.random.default_rng(seed = 22)
+
 if __name__ == "__main__":
     #Random Sampling
     x1, y1, vals1, bestx1, besty1, best1 = randomSampling(landscapes.func1, [-2, 2, -2, 2])
@@ -41,73 +43,24 @@ if __name__ == "__main__":
     plt.show()
 
 
-starts1 = [(-1.6, -1.4), (-1.4, 1.3), (-0.5, 0),
-           (0.5, -1.2), (1.4, 1.2), (1.7, -0.5)]
+    starts1 = [(-1.6, -1.4), (-1.4, 1.3), (-0.5, 0),
+            (0.5, -1.2), (1.4, 1.2), (1.7, -0.5)]
 
-starts2 = [(-2.4, -2.3), (-2.3, 1.2), (0, -2.4),
-           (0.1, 2.3), (2.4, 1.0), (2.3, -1.4)]
+    starts2 = [(-2.4, -2.3), (-2.3, 1.2), (0, -2.4),
+            (0.1, 2.3), (2.4, 1.0), (2.3, -1.4)]
 
-functions = [landscapes.func1, landscapes.func2]
-bounds = [[-2, 2, -2, 2], [-3, 3, -3, 3]]
-starts = [starts1, starts2]
-T0s = [[0.05, 1.0, 1.0], [0.1, 3.0, 3.0]]
-alpha = [0.999, 0.999, 0.99]
-Tmin = 1e-3
+    functions = [landscapes.func1, landscapes.func2]
+    bounds = [[-2, 2, -2, 2], [-3, 3, -3, 3]]
+    starts = [starts1, starts2]
+    T0s = [[0.05, 1.0, 1.0], [0.1, 3.0, 3.0]]
+    alpha = [0.999, 0.999, 0.99]
+    Tmin = 1e-3
 
-s = 0.05
-#HillClimb
-for j in range(2):
-    f = functions[j]
-    b = bounds[j]
-
-    x, y = np.meshgrid(np.linspace(b[0], b[1], 300), np.linspace(b[2], b[3], 300))
-
-    fig1, ax1 = plt.subplots()
-    fig2, ax2 = plt.subplots()
-
-    ax1.contour(x, y, f(x, y), levels=20)
-
-    for i, (x0, y0) in enumerate(starts[j]):
-        path, values, n, reason = hillClimb(f, x0, y0, s, b)
-
-
-        ax1.plot(path[:, 0], path[:, 1],
-                 label=f"Run {i+1}")
-        ax1.scatter(x0, y0, marker="o")
-        ax1.scatter(*path[-1], marker="x")
-
-        ax2.plot(values, label=f"Run {i+1}")
-
-        print(f"Function {j+1}, Run {i+1}")
-        print(f"Start: ({x0}, {y0})")
-        print(f"Final: {path[-1]}")
-        print(f"Value: {values[-1]:.6f}")
-        print(f"Step length: {s}")
-        print(f"Attempts: {n}, Reason: {reason}\n")
-
-    ax1.set_title(f"Function {j+1}: Hill Climbing")
-    ax1.set_xlabel("x")
-    ax1.set_ylabel("y")
-    ax1.set_aspect("equal")
-    ax1.legend()
-
-    ax2.set_title(f"Function {j+1}: Objective Value")
-    ax2.set_xlabel("Attempted Step")
-    ax2.set_ylabel("Objective Value")
-    ax2.legend()
-
-    fig1.savefig(f"hill_paths_{j+1}.png")
-    fig2.savefig(f"hill_values_{j+1}.png")
-
-plt.show()
-
-#Annealing
-for jj in range(2):
-    for ii in range(3):
-        f = functions[jj]
-        T = T0s[jj][ii]
-        a = alpha[ii]
-        b = bounds[jj]
+    s = 0.05
+    #HillClimb
+    for j in range(2):
+        f = functions[j]
+        b = bounds[j]
 
         x, y = np.meshgrid(np.linspace(b[0], b[1], 300), np.linspace(b[2], b[3], 300))
 
@@ -116,83 +69,211 @@ for jj in range(2):
 
         ax1.contour(x, y, f(x, y), levels=20)
 
-        for i, (x0, y0) in enumerate(starts[jj]):
-            path, values, n, reason, bestPoint, bestF, finalT = simAnnealing(f, x0, y0, s, b, T0 = T, alpha = a)
+        for i, (x0, y0) in enumerate(starts[j]):
+            path, values, n, reason = hillClimb(f, x0, y0, s, b)
 
 
             ax1.plot(path[:, 0], path[:, 1],
-                        label=f"Run {i+1}")
+                    label=f"Run {i+1}")
             ax1.scatter(x0, y0, marker="o")
             ax1.scatter(*path[-1], marker="x")
 
-            ax2.plot(values, label=f"Run {i+1}, Function {jj}")
+            ax2.plot(values, label=f"Run {i+1}")
 
-            print(f"Function {jj+1}, Schedule {ii+1}, Run {i+1}")
+            print(f"Function {j+1}, Run {i+1}")
             print(f"Start: ({x0}, {y0})")
             print(f"Final: {path[-1]}")
-            print(f"Best: {bestPoint}")
-            print(f"Best Value: {bestF:.6f}")
-            print(f"Attempts: {n}, Reason: {reason}")
-            print(f"Final Temperature: {finalT:.6f}\n")
+            print(f"Value: {values[-1]:.6f}")
+            print(f"Step length: {s}")
+            print(f"Attempts: {n}, Reason: {reason}\n")
 
-        ax1.set_title(f"Function {jj+1}: Annealing Schedule {ii+1}")
+        ax1.set_title(f"Function {j+1}: Hill Climbing")
         ax1.set_xlabel("x")
         ax1.set_ylabel("y")
         ax1.set_aspect("equal")
         ax1.legend()
 
-        ax2.set_title(f"Function {jj+1}: Annealing Schedule {ii+1}")
+        ax2.set_title(f"Function {j+1}: Objective Value")
         ax2.set_xlabel("Attempted Step")
-        ax2.set_ylabel("Current Objective Value")
+        ax2.set_ylabel("Objective Value")
         ax2.legend()
 
-        fig1.savefig(f"anneal_paths_{jj+1}_{ii+1}.png")
-        fig2.savefig(f"anneal_values_{jj+1}_{ii+1}.png")
+        fig1.savefig(f"plots/hill_paths_{j+1}.png")
+        fig2.savefig(f"plots/hill_values_{j+1}.png")
 
     plt.show()
 
-# Shallow well 
-shallowStarts = [(1.0, 0.5), (1.95, 1.45)]
+    #Annealing
+    for jj in range(2):
+        for ii in range(3):
+            f = functions[jj]
+            T = T0s[jj][ii]
+            a = alpha[ii]
+            b = bounds[jj]
 
-for jjj in range(2):
-    f = functions[jjj]
-    b = bounds[jjj]
-    x, y = np.meshgrid(np.linspace(b[0], b[1], 300), np.linspace(b[2], b[3], 300))
-    for k in range(3):
-        fig1, ax1 = plt.subplots()
-        fig2, ax2 = plt.subplots()
-        ax1.contour(x, y, f(x, y), levels=20)
+            x, y = np.meshgrid(np.linspace(b[0], b[1], 300), np.linspace(b[2], b[3], 300))
+
+            fig1, ax1 = plt.subplots()
+            fig2, ax2 = plt.subplots()
+
+            ax1.contour(x, y, f(x, y), levels=20)
+
+            for i, (x0, y0) in enumerate(starts[jj]):
+                path, values, n, reason, bestPoint, bestF, finalT = simAnnealing(f, x0, y0, s, b, T0 = T, alpha = a)
 
 
-        for i in range(6):
-            path, values, n, reason, bestPoint, bestF, finalT = simAnnealing(
-                functions[jjj], *shallowStarts[jjj], s, bounds[jjj],
-                T0=T0s[jjj][k], alpha=alpha[k]
-            )
-            ax1.plot(path[:, 0], path[:, 1], label=f"Run {i+1}")
-            ax1.scatter(*bestPoint, marker="x")
+                ax1.plot(path[:, 0], path[:, 1],
+                            label=f"Run {i+1}")
+                ax1.scatter(x0, y0, marker="o")
+                ax1.scatter(*bestPoint, marker="x")
 
-            ax2.plot(values, label=f"Run {i+1}")
+                ax2.plot(values, label=f"Run {i+1}, Function {jj}")
 
-            print(f"Function {jjj+1}, Schedule {k+1}, Run {i+1}")
-            print(f"Run {i+1}: Best = {bestF}, Position = {bestPoint}, Steps = {n}")
+                print(f"Function {jj+1}, Schedule {ii+1}, Run {i+1}")
+                print(f"Start: ({x0}, {y0})")
+                print(f"Final: {path[-1]}")
+                print(f"Best: {bestPoint}")
+                print(f"Best Value: {bestF:.6f}")
+                print(f"Attempts: {n}, Reason: {reason}")
+                print(f"Final Temperature: {finalT:.6f}\n")
 
-        ax1.scatter(*shallowStarts[jjj], color="black",
-                    marker="*", s=120, label="Start")
+            ax1.set_title(f"Function {jj+1}: Annealing Schedule {ii+1}")
+            ax1.set_xlabel("x")
+            ax1.set_ylabel("y")
+            ax1.set_aspect("equal")
+            ax1.legend()
 
-        ax1.set_title(f"Function {jjj+1}: Shallow Well, Schedule {k+1}")
-        ax1.set_xlabel("x")
-        ax1.set_ylabel("y")
-        ax1.set_aspect("equal")
-        ax1.legend()
+            ax2.set_title(f"Function {jj+1}: Annealing Schedule {ii+1}")
+            ax2.set_xlabel("Attempted Step")
+            ax2.set_ylabel("Current Objective Value")
+            ax2.legend()
 
-        ax2.set_title(f"Function {jjj+1}: Shallow Well, Schedule {k+1}")
-        ax2.set_xlabel("Attempted Step")
-        ax2.set_ylabel("Current Objective Value")
-        ax2.legend()
+            fig1.savefig(f"plots/anneal_paths_{jj+1}_{ii+1}.png")
+            fig2.savefig(f"plots/anneal_values_{jj+1}_{ii+1}.png")
 
-        fig1.savefig(f"shallow_paths_{jjj+1}_{k+1}.png")
-        fig2.savefig(f"shallow_values_{jjj+1}_{k+1}.png")
+        plt.show()
 
-plt.show()
-           
+    # Shallow well 
+    shallowStarts = [(1.0, 0.5), (1.95, 1.45)]
+
+    for jjj in range(2):
+        f = functions[jjj]
+        b = bounds[jjj]
+        x, y = np.meshgrid(np.linspace(b[0], b[1], 300), np.linspace(b[2], b[3], 300))
+        for k in range(3):
+            fig1, ax1 = plt.subplots()
+            fig2, ax2 = plt.subplots()
+            ax1.contour(x, y, f(x, y), levels=20)
+
+
+            for i in range(6):
+                path, values, n, reason, bestPoint, bestF, finalT = simAnnealing(
+                    functions[jjj], *shallowStarts[jjj], s, bounds[jjj],
+                    T0=T0s[jjj][k], alpha=alpha[k]
+                )
+                ax1.plot(path[:, 0], path[:, 1], label=f"Run {i+1}")
+                ax1.scatter(*bestPoint, marker="x")
+
+                ax2.plot(values, label=f"Run {i+1}")
+
+                print(f"Function {jjj+1}, Schedule {k+1}, Run {i+1}")
+                print(f"Run {i+1}: Best = {bestF}, Position = {bestPoint}, Steps = {n}")
+
+            ax1.scatter(*shallowStarts[jjj], color="black",
+                        marker="*", s=120, label="Start")
+
+            ax1.set_title(f"Function {jjj+1}: Shallow Well, Schedule {k+1}")
+            ax1.set_xlabel("x")
+            ax1.set_ylabel("y")
+            ax1.set_aspect("equal")
+            ax1.legend()
+
+            ax2.set_title(f"Function {jjj+1}: Shallow Well, Schedule {k+1}")
+            ax2.set_xlabel("Attempted Step")
+            ax2.set_ylabel("Current Objective Value")
+            ax2.legend()
+
+            fig1.savefig(f"plots/shallow_paths_{jjj+1}_{k+1}.png")
+            fig2.savefig(f"plots/shallow_values_{jjj+1}_{k+1}.png")
+
+    plt.show()
+
+    #Diagnostics
+    rng = np.random.default_rng(22)
+    N = 1000
+
+    for j in range(2):
+        f = functions[j]
+        b = bounds[j]
+
+        # Same starting points for all four algorithms
+        x0 = rng.uniform(b[0], b[1], N)
+        y0 = rng.uniform(b[2], b[3], N)
+
+        results = []
+
+        for k in range(4):
+            positions = []
+            bestValues = []
+
+            for i in range(N):
+                if k == 0:
+                    path, values, n, reason = hillClimb(
+                        f, x0[i], y0[i], s, b
+                    )
+                    bestPoint = path[-1]
+                    bestF = values[-1]
+
+                else:
+                    path, values, n, reason, bestPoint, bestF, finalT = simAnnealing(
+                        f, x0[i], y0[i], s, b,
+                        T0=T0s[j][k-1], alpha=alpha[k-1]
+                    )
+
+                positions.append(bestPoint)
+                bestValues.append(bestF)
+
+            results.append((np.array(positions), np.array(bestValues)))
+
+
+        # Endpoint heatmaps
+        fig, axes = plt.subplots(2, 2, figsize=(10, 9))
+        names = ["Hill Climbing", "Low Temperature",
+                "Sustained", "Rapid Cooling"]
+
+        for k in range(4):
+            pos, vals = results[k]
+
+            ax = axes.flat[k]
+            h = ax.hist2d(pos[:, 0], pos[:, 1], bins=40,
+                        range=[[b[0], b[1]], [b[2], b[3]]],
+                        vmin=0, vmax=N)
+
+            ax.set_title(names[k])
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+
+        fig.suptitle(f"Function {j+1}: Best Point Heatmaps")
+        fig.tight_layout()
+        fig.savefig(f"plots/diagnostic_heatmap_{j+1}.png")
+
+        # Best-value histograms
+        fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+
+        allValues = np.concatenate([r[1] for r in results])
+        bins = np.linspace(allValues.min(), allValues.max(), 40)
+
+        for k in range(4):
+            ax = axes.flat[k]
+            ax.hist(results[k][1], bins=bins)
+            ax.set_title(names[k])
+            ax.set_xlabel("Best Objective Value")
+            ax.set_ylabel("Count")
+            ax.set_xlim(bins[0], bins[-1])
+            ax.set_ylim(0, N)
+
+        fig.suptitle(f"Function {j+1}: Best Value Histograms")
+        fig.tight_layout()
+        fig.savefig(f"plots/ensemble_histograms_{j+1}.png")
+
+    plt.show()
